@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "workouts"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+celery = {extras = ["redis"], version = "^5.4.0"}
+djangorestframework = "^3.15.2"
+gunicorn = "^23.0.0"
+psycopg2-binary = "2.9.9"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

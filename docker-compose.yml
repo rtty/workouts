@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres1
+      POSTGRES_DB: pdb
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    restart: always
+
+  app:
+    build: .
+    command: poetry run gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres1@db/pdb
+
+  celery_worker:
+    build: .
+    command: poetry run celery -A config worker --loglevel=info --autoscale=10,5
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+    deploy:
+      replicas: 3
+
+  flower:
+    image: mher/flower
+    restart: always
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+
+volumes:
+  pg_data:
